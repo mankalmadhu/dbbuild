@@ -3,6 +3,8 @@
 #include "storage.h"
 
 int main(int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
     printf("Mini Relational Database\n");
     
     if (storage_init() != STORAGE_SUCCESS) {
