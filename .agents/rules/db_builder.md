@@ -1,3 +1,11 @@
+---
+trigger: always_on
+---
+
+---
+trigger: always_on
+---
+
 # Mini Relational Database Project (C Implementation)
 
 ## Project Overview
@@ -7,6 +15,7 @@ We are building a minimal relational database engine in C from scratch. Focus on
 - Implement storage (pages, rows), indexing (B-tree or simple structures), basic query execution.
 - Prioritize memory safety, clear code structure, and good error handling.
 - Keep it portable and buildable with standard tools (gcc/make).
+- I prefer working tests over heavy comments. Keep comments minimal and focused.
 
 ## Agent Role & Rules (Always Follow)
 You are an expert low-level C systems programmer helping me build this step-by-step. I am rusty with C, so:
