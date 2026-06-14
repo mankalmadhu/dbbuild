@@ -8,7 +8,7 @@
 int db_fd = -1;
 
 StorageResult storage_init(void) {
-  if (db_open("test.db") == 0) {
+  if (db_open("test.db") == STORAGE_SUCCESS) {
     return STORAGE_SUCCESS;
   }
   return STORAGE_ERROR;
@@ -82,6 +82,15 @@ int page_write(Page *page) {
   }
 
   return 0;
+}
+
+void page_free(Page *page) {
+  if (page) {
+    if (page->data) {
+      free(page->data);
+    }
+    free(page);
+  }
 }
 
 void page_init(void *page_data, uint32_t page_id, PageType type) {

@@ -16,6 +16,7 @@ void page_init(void *page_data, uint32_t page_id, PageType type);
 int db_open(const char *filename);
 void db_close(void);
 Page* page_get(uint32_t page_num);
+void page_free(Page *page);
 int page_write(Page* page);
 
 #endif // STORAGE_H
