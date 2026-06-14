@@ -7,6 +7,13 @@
 
 int db_fd = -1;
 
+StorageResult storage_init(void) {
+  if (db_open("test.db") == 0) {
+    return STORAGE_SUCCESS;
+  }
+  return STORAGE_ERROR;
+}
+
 int db_open(const char *filename) {
 
   db_fd = open(filename, O_RDWR | O_CREAT, 0644);
@@ -52,10 +59,9 @@ Page *page_get(uint32_t page_num) {
     return NULL;
   }
 
-  // If reading a new or partial page, ensure the rest is zeroed out
+  // If reading a new or partial page, initialize it properly
   if (bytes_read < PAGE_SIZE) {
-    size_t zero_start = (bytes_read > 0) ? bytes_read : 0;
-    memset((char *)page->data + zero_start, 0, PAGE_SIZE - zero_start);
+    page_init(page->data, page_num, PAGE_TYPE_TABLE_LEAF);
   }
 
   return page;

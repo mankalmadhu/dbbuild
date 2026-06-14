@@ -6,3 +6,7 @@ test_runner.dSYM/Contents/Resources/DWARF/test_runner
 test_runner.dSYM/Contents/Resources/Relocations/aarch64/test_runner.yml
 test_runner.dSYM/Contents/Info.plist
 test_runner
+test.db
+db.dSYM/Contents/Info.plist
+.gitignore
+db.dSYM/Contents/Resources/Relocations/aarch64/db.yml

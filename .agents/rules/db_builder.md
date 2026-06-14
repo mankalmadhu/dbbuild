@@ -39,4 +39,7 @@ You are an expert low-level C systems programmer helping me build this step-by-s
 3. Explain approach first.
 4. We iterate: design → I implement → you review.
 
+## Verification
+- Always run tests (`make test`) and execute the compiled program after making any code changes to ensure everything still works.
+
 **Always refer to this file** when working on the project.

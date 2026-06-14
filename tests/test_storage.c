@@ -34,15 +34,15 @@ void test_db_read_write() {
   int res = db_open(db_file);
   assert(res == 0); // Assuming 0 is success
 
-  // 2. Get a page (should create it if it doesn't exist)
+  // 2. Get a page (should create it and initialize if it doesn't exist)
   Page* p = page_get(0);
   assert(p != NULL);
   assert(p->data != NULL);
 
-  // 3. Initialize it and modify it
-  page_init(p->data, 0, PAGE_TYPE_TABLE_LEAF);
+  // 3. Modify header (e.g. item_count++)
   PageHeader *header = (PageHeader *)p->data;
-  header->item_count = 99;
+  uint16_t initial_count = header->item_count;
+  header->item_count++;
 
   // 4. Write it back
   res = page_write(p);
@@ -65,7 +65,7 @@ void test_db_read_write() {
   
   assert(reloaded_header->page_id == 0);
   assert(reloaded_header->type == PAGE_TYPE_TABLE_LEAF);
-  assert(reloaded_header->item_count == 99);
+  assert(reloaded_header->item_count == initial_count + 1);
 
   free(p_reloaded->data);
   free(p_reloaded);
