@@ -73,10 +73,13 @@ void test_db_read_write() {
   printf("test_db_read_write passed!\n");
 }
 
+void test_row_serialize(void);
+
 int main(void) {
   printf("--- Running DB Tests ---\n");
   test_page_init();
   test_db_read_write();
+  test_row_serialize();
   printf("--- All tests passed! ---\n");
   return 0;
 }
