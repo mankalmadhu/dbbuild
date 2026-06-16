@@ -1,0 +1,55 @@
+#include "cursor.h"
+#include "slotted_page.h"
+#include "storage.h"
+#include "storage_types.h"
+#include <stdlib.h>
+#include <string.h>
+
+Cursor *table_start(Table *table) {
+  Cursor *cursor = malloc(sizeof(*cursor));
+  cursor->table = table;
+  cursor->page_num = 0;
+  cursor->slot_num = 0;
+  cursor->end_of_table = (table->num_pages == 0);
+  return cursor;
+}
+
+void cursor_get(Cursor *cursor, void *dest_buffer, uint32_t row_size) {
+  if (cursor->end_of_table) {
+    return;
+  }
+  Page *page = page_get(cursor->page_num);
+  void *row_data = page_get_row_data(page, cursor->slot_num);
+
+  if (row_data == NULL) {
+    cursor->end_of_table = true;
+    page_free(page);
+    return;
+  }
+
+  memcpy(dest_buffer, row_data, row_size);
+  page_free(page);
+}
+
+void cursor_advance(Cursor *cursor) {
+  if (cursor->end_of_table) {
+    return;
+  }
+  Page *page = page_get(cursor->page_num);
+  PageHeader *pageHeader = (PageHeader *)page->data;
+  cursor->slot_num++;
+  if (cursor->slot_num >= pageHeader->item_count) {
+    cursor->page_num++;
+    cursor->slot_num = 0;
+    if (cursor->page_num >= cursor->table->num_pages) {
+      cursor->end_of_table = true;
+    }
+  }
+  page_free(page);
+}
+
+void cursor_free(Cursor *cursor) {
+  if (cursor) {
+    free(cursor);
+  }
+}

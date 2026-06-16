@@ -9,6 +9,7 @@ void test_page_get_row_data(void);
 void test_page_insert_row(void);
 void test_table_open_close(void);
 void test_table_insert_row(void);
+void test_cursor_full_scan(void);
 
 int main(void) {
   printf("--- Running DB Tests ---\n");
@@ -28,6 +29,9 @@ int main(void) {
   // Table Tests
   test_table_open_close();
   test_table_insert_row();
+  
+  // Cursor Tests
+  test_cursor_full_scan();
   
   printf("--- All tests passed! ---\n");
   return 0;
