@@ -41,7 +41,9 @@ StorageResult table_insert_row(Table* table, void* row_data,
     return STORAGE_ERROR;
   }
 
-  StorageResult res = page_insert_row(target_page, row_data, row_size);
+  SlottedPage sp;
+  slotted_page_init(&sp, target_page);
+  StorageResult res = slotted_page_insert_row(&sp, row_data, row_size);
 
   if (res == STORAGE_ERROR) {
     page_free(target_page);
@@ -51,7 +53,8 @@ StorageResult table_insert_row(Table* table, void* row_data,
     // Explicitly initialize the new page
     page_init(target_page->data, target_page_num, PAGE_TYPE_TABLE_LEAF);
     
-    res = page_insert_row(target_page, row_data, row_size);
+    slotted_page_init(&sp, target_page);
+    res = slotted_page_insert_row(&sp, row_data, row_size);
   }
 
   if (res == STORAGE_SUCCESS) {

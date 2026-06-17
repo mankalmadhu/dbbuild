@@ -1,56 +1,61 @@
 #include "slotted_page.h"
 #include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
-// --- Slotted Page Implementation ---
-
-uint16_t* page_get_slot_array(Page* page) {
-  uint8_t* data_ptr = (uint8_t *)page->data;
-  data_ptr += sizeof(PageHeader);
-  return (uint16_t *)data_ptr;
+void slotted_page_init(SlottedPage* sp, Page* page) {
+    sp->raw_page = page;
+    sp->header = (PageHeader*)page->data;
 }
 
-void* page_get_row_data(Page* page, uint16_t slot_num) {
-  PageHeader* header = (PageHeader *)page->data;
-
-  // 1. MUST check bounds before reading from the array!
-  if (slot_num >= header->item_count) {
-    return NULL;
-  }
-
-  uint16_t* data_ptr = page_get_slot_array(page);
-  uint16_t row_offset = data_ptr[slot_num];
-
-  // 2. Check for deleted/empty slot
-  if (row_offset == 0) {
-    return NULL;
-  }
-
-  uint8_t* data_ptr2 = (uint8_t *)page->data;
-  data_ptr2 += row_offset;
-  return (void *)data_ptr2;
+uint16_t slotted_page_get_row_count(const SlottedPage* sp) {
+    return sp->header->item_count;
 }
 
-StorageResult page_insert_row(Page* page, void* row_data, uint32_t row_size) {
-  PageHeader* header = (PageHeader *)page->data;
-  uint16_t required_space = row_size + sizeof(uint16_t);
+bool slotted_page_has_space(const SlottedPage* sp, uint32_t row_size) {
+    uint32_t required_space = row_size + sizeof(uint16_t);
+    return sp->header->free_space >= required_space;
+}
 
-  if (header->free_space < required_space) {
-    return STORAGE_ERROR;
-  }
+static uint16_t* get_slot_array(SlottedPage* sp) {
+    uint8_t* data_ptr = (uint8_t*)sp->raw_page->data;
+    data_ptr += sizeof(PageHeader);
+    return (uint16_t*)data_ptr;
+}
 
-  header->free_ptr -= row_size;
-  uint8_t* data_ptr = (uint8_t *)page->data;
-  data_ptr += header->free_ptr;
+void* slotted_page_get_row(SlottedPage* sp, uint16_t slot_num) {
+    if (slot_num >= sp->header->item_count) {
+        return NULL;
+    }
+    
+    uint16_t* slot_array = get_slot_array(sp);
+    uint16_t row_offset = slot_array[slot_num];
+    
+    if (row_offset == 0) {
+        return NULL;
+    }
+    
+    uint8_t* data_ptr = (uint8_t*)sp->raw_page->data;
+    data_ptr += row_offset;
+    return (void*)data_ptr;
+}
 
-  memcpy(data_ptr, row_data, row_size);
-
-  uint16_t* data_ptr2 = page_get_slot_array(page);
-  data_ptr2[header->item_count] = header->free_ptr;
-
-  header->free_space -= required_space;
-  header->item_count++;
-
-  return STORAGE_SUCCESS;
+StorageResult slotted_page_insert_row(SlottedPage* sp, const void* row_data, uint32_t row_size) {
+    if (!slotted_page_has_space(sp, row_size)) {
+        return STORAGE_ERROR;
+    }
+    
+    uint32_t required_space = row_size + sizeof(uint16_t);
+    sp->header->free_ptr -= row_size;
+    
+    uint8_t* data_ptr = (uint8_t*)sp->raw_page->data;
+    data_ptr += sp->header->free_ptr;
+    memcpy(data_ptr, row_data, row_size);
+    
+    uint16_t* slot_array = get_slot_array(sp);
+    slot_array[sp->header->item_count] = sp->header->free_ptr;
+    
+    sp->header->free_space -= required_space;
+    sp->header->item_count++;
+    
+    return STORAGE_SUCCESS;
 }

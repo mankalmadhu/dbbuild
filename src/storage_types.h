@@ -37,6 +37,11 @@ typedef struct {
 } PageHeader;
 
 typedef struct {
+  Page* raw_page;
+  PageHeader* header;
+} SlottedPage;
+
+typedef struct {
   BlockStorage *block_storage;
 } Table;
 

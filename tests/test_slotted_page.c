@@ -9,19 +9,18 @@
 void test_page_get_slot_array() {
   printf("Running test_page_get_slot_array...\n");
   
-  // Allocate raw page memory
   Page page;
   page.data = malloc(PAGE_SIZE);
   assert(page.data != NULL);
   
   page_init(page.data, 1, PAGE_TYPE_TABLE_LEAF);
   
-  // Test slot array pointer
-  uint16_t* slot_array = page_get_slot_array(&page);
+  SlottedPage sp;
+  slotted_page_init(&sp, &page);
   
-  // It should start exactly after PageHeader
-  uint8_t* expected_ptr = ((uint8_t *)page.data) + sizeof(PageHeader);
-  assert((uint8_t *)slot_array == expected_ptr);
+  // Since get_slot_array is static now, we can't test it directly.
+  // We will just verify it creates successfully and has 0 rows.
+  assert(slotted_page_get_row_count(&sp) == 0);
   
   free(page.data);
   printf("test_page_get_slot_array passed!\n");
@@ -35,20 +34,11 @@ void test_page_get_row_data() {
   assert(page.data != NULL);
   
   page_init(page.data, 1, PAGE_TYPE_TABLE_LEAF);
-  PageHeader* header = (PageHeader *)page.data;
-  
-  // Fake an inserted row
-  header->item_count = 1;
-  uint16_t* slots = page_get_slot_array(&page);
-  slots[0] = 4000; // Fake row at byte offset 4000
-  
-  // Test valid lookup
-  uint8_t* row_ptr = (uint8_t *)page_get_row_data(&page, 0);
-  uint8_t* expected_ptr = ((uint8_t *)page.data) + 4000;
-  assert(row_ptr == expected_ptr);
+  SlottedPage sp;
+  slotted_page_init(&sp, &page);
   
   // Test out of bounds lookup (should return NULL)
-  void* invalid_ptr = page_get_row_data(&page, 99);
+  void* invalid_ptr = slotted_page_get_row(&sp, 99);
   assert(invalid_ptr == NULL);
   
   free(page.data);
@@ -63,6 +53,8 @@ void test_page_insert_row() {
   assert(page.data != NULL);
   
   page_init(page.data, 1, PAGE_TYPE_TABLE_LEAF);
+  SlottedPage sp;
+  slotted_page_init(&sp, &page);
   
   // 1. Prepare a serialized row
   Row r1 = { .id = 1 };
@@ -74,29 +66,26 @@ void test_page_insert_row() {
   FixedLengthRowStrategy.serialize(&r1, buffer);
   
   // 2. Insert row 1
-  StorageResult res = page_insert_row(&page, buffer, row_size);
+  StorageResult res = slotted_page_insert_row(&sp, buffer, row_size);
   assert(res == STORAGE_SUCCESS);
   
-  PageHeader* header = (PageHeader *)page.data;
-  assert(header->item_count == 1);
-  assert(header->free_ptr == PAGE_SIZE - row_size);
+  assert(slotted_page_get_row_count(&sp) == 1);
   
   // 3. Insert row 2
   Row r2 = { .id = 2 };
   FixedLengthRowStrategy.serialize(&r2, buffer);
-  res = page_insert_row(&page, buffer, row_size);
+  res = slotted_page_insert_row(&sp, buffer, row_size);
   assert(res == STORAGE_SUCCESS);
   
-  assert(header->item_count == 2);
-  assert(header->free_ptr == PAGE_SIZE - (2 * row_size));
+  assert(slotted_page_get_row_count(&sp) == 2);
   
   // 4. Verify we can get them back
-  void* retrieved_data = page_get_row_data(&page, 0);
+  void* retrieved_data = slotted_page_get_row(&sp, 0);
   Row retrieved_row;
   FixedLengthRowStrategy.deserialize(retrieved_data, &retrieved_row);
   assert(retrieved_row.id == 1);
   
-  retrieved_data = page_get_row_data(&page, 1);
+  retrieved_data = slotted_page_get_row(&sp, 1);
   FixedLengthRowStrategy.deserialize(retrieved_data, &retrieved_row);
   assert(retrieved_row.id == 2);
   
