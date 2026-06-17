@@ -23,7 +23,7 @@ typedef struct {
 } BlockStorage;
 
 typedef struct {
-  void *data;
+  void* data;
   uint32_t page_num;
 } Page;
 
@@ -42,11 +42,11 @@ typedef struct {
 } SlottedPage;
 
 typedef struct {
-  BlockStorage *block_storage;
+  BlockStorage* block_storage;
 } Table;
 
 typedef struct {
-  Table *table;
+  Table* table;
   uint32_t page_num;
   uint16_t slot_num;
   bool end_of_table;

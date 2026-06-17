@@ -30,12 +30,24 @@ void db_close_table(Table* table) {
   }
 }
 
+uint32_t table_get_page_count(Table* table) {
+    return block_storage_get_page_count(table->block_storage);
+}
+
+Page* table_get_page(Table* table, uint32_t page_num) {
+    return block_storage_get_page(table->block_storage, page_num);
+}
+
 StorageResult table_insert_row(Table* table, void* row_data,
                                uint32_t row_size) {
-  uint32_t num_pages = block_storage_get_page_count(table->block_storage);
-  uint32_t target_page_num = (num_pages == 0) ? 0 : num_pages - 1;
-
-  Page* target_page = block_storage_get_page(table->block_storage, target_page_num);
+  uint32_t num_pages = table_get_page_count(table);
+  
+  Page* target_page = NULL;
+  if (num_pages == 0) {
+      target_page = block_storage_append_page(table->block_storage);
+  } else {
+      target_page = block_storage_get_page(table->block_storage, num_pages - 1);
+  }
 
   if (!target_page) {
     return STORAGE_ERROR;
@@ -47,11 +59,7 @@ StorageResult table_insert_row(Table* table, void* row_data,
 
   if (res == STORAGE_ERROR) {
     page_free(target_page);
-    target_page_num++;
-    target_page = block_storage_get_page(table->block_storage, target_page_num);
-    
-    // Explicitly initialize the new page
-    page_init(target_page->data, target_page_num, PAGE_TYPE_TABLE_LEAF);
+    target_page = block_storage_append_page(table->block_storage);
     
     slotted_page_init(&sp, target_page);
     res = slotted_page_insert_row(&sp, row_data, row_size);
@@ -59,9 +67,6 @@ StorageResult table_insert_row(Table* table, void* row_data,
 
   if (res == STORAGE_SUCCESS) {
     block_storage_write_page(table->block_storage, target_page);
-    if (target_page_num >= table->block_storage->num_pages) {
-      table->block_storage->num_pages = target_page_num + 1;
-    }
   }
   page_free(target_page);
   return res;

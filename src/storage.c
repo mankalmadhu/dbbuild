@@ -101,6 +101,27 @@ uint32_t block_storage_get_page_count(BlockStorage* block_storage) {
   return 0;
 }
 
+Page* block_storage_append_page(BlockStorage* block_storage) {
+  uint32_t new_page_num = block_storage->num_pages;
+  
+  Page* page = malloc(sizeof(Page));
+  if (!page) return NULL;
+
+  page->data = malloc(PAGE_SIZE);
+  if (!page->data) {
+    free(page);
+    return NULL;
+  }
+  
+  page->page_num = new_page_num;
+  page_init(page->data, new_page_num, PAGE_TYPE_TABLE_LEAF);
+  
+  block_storage->num_pages++;
+  block_storage->file_length += PAGE_SIZE;
+  
+  return page;
+}
+
 void page_free(Page* page) {
   if (page) {
     if (page->data) {

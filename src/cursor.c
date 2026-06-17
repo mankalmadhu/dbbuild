@@ -10,7 +10,7 @@ Cursor* table_start(Table* table) {
   cursor->table = table;
   cursor->page_num = 0;
   cursor->slot_num = 0;
-  cursor->end_of_table = (block_storage_get_page_count(table->block_storage) == 0);
+  cursor->end_of_table = (table_get_page_count(table) == 0);
   return cursor;
 }
 
@@ -18,7 +18,7 @@ void cursor_get(Cursor* cursor, void* dest_buffer, uint32_t row_size) {
   if (cursor->end_of_table) {
     return;
   }
-  Page* page = block_storage_get_page(cursor->table->block_storage, cursor->page_num);
+  Page* page = table_get_page(cursor->table, cursor->page_num);
   SlottedPage sp;
   slotted_page_init(&sp, page);
   void* row_data = slotted_page_get_row(&sp, cursor->slot_num);
@@ -37,14 +37,14 @@ void cursor_advance(Cursor* cursor) {
   if (cursor->end_of_table) {
     return;
   }
-  Page* page = block_storage_get_page(cursor->table->block_storage, cursor->page_num);
+  Page* page = table_get_page(cursor->table, cursor->page_num);
   SlottedPage sp;
   slotted_page_init(&sp, page);
   cursor->slot_num++;
   if (cursor->slot_num >= slotted_page_get_row_count(&sp)) {
     cursor->page_num++;
     cursor->slot_num = 0;
-    if (cursor->page_num >= block_storage_get_page_count(cursor->table->block_storage)) {
+    if (cursor->page_num >= table_get_page_count(cursor->table)) {
       cursor->end_of_table = true;
     }
   }
