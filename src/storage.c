@@ -5,53 +5,64 @@
 #include <string.h>
 #include <unistd.h>
 
-int db_fd = -1;
-
-StorageResult storage_init(void) {
-  if (db_open("test.db") == STORAGE_SUCCESS) {
-    return STORAGE_SUCCESS;
-  }
-  return STORAGE_ERROR;
-}
-
-int db_open(const char *filename) {
-
-  db_fd = open(filename, O_RDWR | O_CREAT, 0644);
-
-  if (db_fd == -1) {
+BlockStorage* block_storage_open(const char* filename) {
+  int fd = open(filename, O_RDWR | O_CREAT, 0644);
+  if (fd == -1) {
     perror("Error opening database file");
-    return STORAGE_ERROR;
+    return NULL;
   }
 
-  return STORAGE_SUCCESS;
+  BlockStorage* block_storage = malloc(sizeof(BlockStorage));
+  if (!block_storage) {
+    close(fd);
+    return NULL;
+  }
+
+  block_storage->file_descriptor = fd;
+
+  off_t file_length = lseek(fd, 0, SEEK_END);
+  if (file_length == -1) {
+    perror("Error seeking to end of file");
+    free(block_storage);
+    close(fd);
+    return NULL;
+  }
+
+  block_storage->file_length = file_length;
+  block_storage->num_pages = file_length / PAGE_SIZE;
+
+  return block_storage;
 }
 
-void db_close(void) {
-  close(db_fd);
-  db_fd = -1;
+void block_storage_close(BlockStorage* block_storage) {
+  if (block_storage) {
+    close(block_storage->file_descriptor);
+    free(block_storage);
+  }
 }
 
-Page *page_get(uint32_t page_num) {
-  Page *page = malloc(sizeof(*page));
-  if (!page) return NULL;
+Page* block_storage_get_page(BlockStorage* block_storage, uint32_t page_num) {
+  Page* page = malloc(sizeof(Page));
+  if (!page)
+    return NULL;
 
   page->data = malloc(PAGE_SIZE);
   if (!page->data) {
     free(page);
     return NULL;
   }
-  
+
   page->page_num = page_num;
-  
+
   off_t offset = page_num * PAGE_SIZE;
-  if (lseek(db_fd, offset, SEEK_SET) == -1) {
+  if (lseek(block_storage->file_descriptor, offset, SEEK_SET) == -1) {
     perror("Error seeking to offset for page get");
     free(page->data);
     free(page);
     return NULL;
   }
-  
-  ssize_t bytes_read = read(db_fd, page->data, PAGE_SIZE);
+
+  ssize_t bytes_read = read(block_storage->file_descriptor, page->data, PAGE_SIZE);
   if (bytes_read == -1) {
     perror("Error reading page from file");
     free(page->data);
@@ -67,15 +78,15 @@ Page *page_get(uint32_t page_num) {
   return page;
 }
 
-int page_write(Page *page) {
+int block_storage_write_page(BlockStorage* block_storage, Page* page) {
   off_t offset = page->page_num * PAGE_SIZE;
-  
-  if (lseek(db_fd, offset, SEEK_SET) == -1) {
+
+  if (lseek(block_storage->file_descriptor, offset, SEEK_SET) == -1) {
     perror("Error seeking to offset for page write");
     return -1;
   }
 
-  ssize_t bytes_written = write(db_fd, page->data, PAGE_SIZE);
+  ssize_t bytes_written = write(block_storage->file_descriptor, page->data, PAGE_SIZE);
   if (bytes_written == -1) {
     perror("Error writing page to file");
     return -1;
@@ -84,7 +95,13 @@ int page_write(Page *page) {
   return 0;
 }
 
-void page_free(Page *page) {
+uint32_t block_storage_get_page_count(BlockStorage* block_storage) {
+  if (block_storage)
+    return block_storage->num_pages;
+  return 0;
+}
+
+void page_free(Page* page) {
   if (page) {
     if (page->data) {
       free(page->data);
@@ -93,10 +110,10 @@ void page_free(Page *page) {
   }
 }
 
-void page_init(void *page_data, uint32_t page_id, PageType type) {
+void page_init(void* page_data, uint32_t page_id, PageType type) {
   memset(page_data, 0, PAGE_SIZE);
 
-  PageHeader *header = (PageHeader *)page_data;
+  PageHeader* header = (PageHeader *)page_data;
   header->page_id = page_id;
   header->next_page = 0;
   header->type = type;

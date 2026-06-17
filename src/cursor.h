@@ -5,13 +5,6 @@
 #include <stdint.h>
 #include "table.h"
 
-typedef struct {
-    Table *table;
-    uint32_t page_num;
-    uint16_t slot_num;
-    bool end_of_table;
-} Cursor;
-
 // Create a cursor pointing to the start of the table
 Cursor* table_start(Table* table);
 

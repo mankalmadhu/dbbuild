@@ -10,3 +10,4 @@ test.db
 db.dSYM/Contents/Info.plist
 .gitignore
 db.dSYM/Contents/Resources/Relocations/aarch64/db.yml
+tmp/

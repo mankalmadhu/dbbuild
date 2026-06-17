@@ -4,10 +4,6 @@
 #include <stdint.h>
 #include "storage.h"
 
-typedef struct {
-    uint32_t num_pages; 
-} Table;
-
 // Open the DB and create a Table abstraction
 Table* db_open_table(const char* filename);
 
@@ -15,6 +11,6 @@ Table* db_open_table(const char* filename);
 void db_close_table(Table* table);
 
 // Insert a row, allocating new pages if necessary
-StorageResult table_insert_row(Table *table, void *row_data, uint32_t row_size);
+StorageResult table_insert_row(Table* table, void* row_data, uint32_t row_size);
 
 #endif // TABLE_H

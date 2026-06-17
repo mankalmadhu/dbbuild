@@ -17,7 +17,7 @@ void test_row_serialize() {
   assert(size == ROW_SIZE);
 
   // 2. Allocate a buffer to simulate the space in a page
-  void *buffer = malloc(size);
+  void* buffer = malloc(size);
   assert(buffer != NULL);
 
   // 3. Serialize the row into the buffer

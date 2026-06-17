@@ -1,38 +1,56 @@
 #ifndef STORAGE_TYPES_H
 #define STORAGE_TYPES_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-// We will use 4KB pages to align with standard OS block sizes.
 #define PAGE_SIZE 4096
+#define COLUMN_USERNAME_SIZE 32
+#define COLUMN_EMAIL_SIZE 255
 
-// Helps us identify what kind of data lives on this page
 typedef enum {
   PAGE_TYPE_INVALID = 0,
   PAGE_TYPE_TABLE_LEAF = 1,
   PAGE_TYPE_TABLE_INTERIOR = 2
 } PageType;
 
-// The metadata at the very beginning of every 4KB page
-typedef struct {
-  uint32_t page_id; // The unique number of this page (0, 1, 2...)
-  uint32_t
-      next_page; // Points to next logical page for leaf traversal or overflow
-  uint16_t type; // Uses the PageType enum
-  uint16_t item_count; // Number of rows/records currently stored on this page
-  uint16_t free_space; // How many bytes of free space are left?
-  uint16_t
-      free_ptr; // Byte offset to where the next piece of data should be written
-} PageHeader;
-
-// Example return codes
 typedef enum { STORAGE_SUCCESS = 0, STORAGE_ERROR = 1 } StorageResult;
 
-// Wrapper for a page in memory
+typedef struct {
+  int file_descriptor;
+  uint32_t file_length;
+  uint32_t num_pages;
+} BlockStorage;
+
 typedef struct {
   void *data;
   uint32_t page_num;
 } Page;
 
-#endif // STORAGE_TYPES_H
+typedef struct {
+  uint32_t page_id;
+  uint32_t next_page;
+  uint16_t type;
+  uint16_t item_count;
+  uint16_t free_space;
+  uint16_t free_ptr;
+} PageHeader;
+
+typedef struct {
+  BlockStorage *block_storage;
+} Table;
+
+typedef struct {
+  Table *table;
+  uint32_t page_num;
+  uint16_t slot_num;
+  bool end_of_table;
+} Cursor;
+
+typedef struct {
+  uint32_t id;
+  char username[COLUMN_USERNAME_SIZE];
+  char email[COLUMN_EMAIL_SIZE];
+} Row;
+
+#endif

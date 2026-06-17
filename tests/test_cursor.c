@@ -8,16 +8,16 @@
 
 void test_cursor_full_scan() {
     printf("Running test_cursor_full_scan...\n");
-    const char *db_file = "test_cursor.db";
+    const char* db_file = "test_cursor.db";
     remove(db_file);
 
-    Table *table = db_open_table(db_file);
+    Table* table = db_open_table(db_file);
     assert(table != NULL);
 
     // 1. Insert 20 rows to force spanning across 2 pages
     Row r;
     uint32_t row_size = FixedLengthRowStrategy.get_row_size(&r);
-    void *buffer = malloc(row_size);
+    void* buffer = malloc(row_size);
     
     for (int i = 0; i < 20; i++) {
         r.id = i;
@@ -29,10 +29,10 @@ void test_cursor_full_scan() {
     }
 
     // 2. Use a cursor to read all 20 rows back in order
-    Cursor *cursor = table_start(table);
+    Cursor* cursor = table_start(table);
     assert(cursor != NULL);
 
-    int rows_read = 0;
+    uint32_t rows_read = 0;
     while (!cursor->end_of_table) {
         // Read the current row
         cursor_get(cursor, buffer, row_size);
