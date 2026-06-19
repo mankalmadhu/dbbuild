@@ -15,8 +15,18 @@ void test_cursor_full_scan(void);
 void test_new_input_buffer(void);
 void test_read_input(void);
 
+// Compiler & Executor Tests
+void test_prepare_insert(void);
+void test_prepare_select(void);
+void test_executor_insert_select(void);
+
 int main(void) {
   printf("--- Running DB Tests ---\n");
+  
+  // Compiler & Executor Tests
+  test_prepare_insert();
+  test_prepare_select();
+  test_executor_insert_select();
   
   // Input Reader Tests
   test_new_input_buffer();

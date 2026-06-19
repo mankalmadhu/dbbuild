@@ -1,6 +1,7 @@
 #include "storage_types.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 InputBuffer *new_input_buffer() {
@@ -11,7 +12,7 @@ InputBuffer *new_input_buffer() {
   return input_buffer;
 }
 
-void read_input(InputBuffer *input_buffer, FILE* stream) {
+void read_input(InputBuffer *input_buffer, FILE *stream) {
   ssize_t bytes_read =
       getline(&(input_buffer->buffer), &(input_buffer->buffer_length), stream);
   if (bytes_read <= 0) {
