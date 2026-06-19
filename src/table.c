@@ -3,6 +3,7 @@
 #include "storage.h"
 #include "storage_types.h"
 #include <stdlib.h>
+#include <string.h>
 
 Table* db_open_table(const char* filename) {
   BlockStorage* block_storage = block_storage_open(filename);
@@ -36,6 +37,36 @@ uint32_t table_get_page_count(Table* table) {
 
 Page* table_get_page(Table* table, uint32_t page_num) {
     return block_storage_get_page(table->block_storage, page_num);
+}
+
+bool table_read_row(Table* table, uint32_t page_num, uint16_t slot_num, void* dest_buffer, uint32_t row_size) {
+    Page* page = table_get_page(table, page_num);
+    if (!page) return false;
+    
+    SlottedPage sp;
+    slotted_page_init(&sp, page);
+    void* row_data = slotted_page_get_row(&sp, slot_num);
+    
+    if (row_data == NULL) {
+        page_free(page);
+        return false;
+    }
+    
+    memcpy(dest_buffer, row_data, row_size);
+    page_free(page);
+    return true;
+}
+
+uint16_t table_get_row_count_for_page(Table* table, uint32_t page_num) {
+    Page* page = table_get_page(table, page_num);
+    if (!page) return 0;
+    
+    SlottedPage sp;
+    slotted_page_init(&sp, page);
+    uint16_t count = slotted_page_get_row_count(&sp);
+    
+    page_free(page);
+    return count;
 }
 
 StorageResult table_insert_row(Table* table, void* row_data,
