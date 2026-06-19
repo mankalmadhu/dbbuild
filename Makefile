@@ -33,6 +33,7 @@ clean:
 
 TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
 
-test: $(CORE_OBJS)
+test: $(CORE_OBJS) $(TARGET)
 	$(CC) $(CFLAGS) -o $(TEST_TARGET) $(TEST_SRCS) $(CORE_OBJS) $(LDFLAGS)
 	./$(TEST_TARGET)
+	bash tests/integration_test.sh
