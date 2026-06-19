@@ -11,8 +11,16 @@ void test_table_open_close(void);
 void test_table_insert_row(void);
 void test_cursor_full_scan(void);
 
+// Input Reader Tests
+void test_new_input_buffer(void);
+void test_read_input(void);
+
 int main(void) {
   printf("--- Running DB Tests ---\n");
+  
+  // Input Reader Tests
+  test_new_input_buffer();
+  test_read_input();
   
   // Storage Tests
   test_page_init();

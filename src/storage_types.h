@@ -2,7 +2,9 @@
 #define STORAGE_TYPES_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #define PAGE_SIZE 4096
 #define COLUMN_USERNAME_SIZE 32
@@ -23,7 +25,7 @@ typedef struct {
 } BlockStorage;
 
 typedef struct {
-  void* data;
+  void *data;
   uint32_t page_num;
 } Page;
 
@@ -37,16 +39,16 @@ typedef struct {
 } PageHeader;
 
 typedef struct {
-  Page* raw_page;
-  PageHeader* header;
+  Page *raw_page;
+  PageHeader *header;
 } SlottedPage;
 
 typedef struct {
-  BlockStorage* block_storage;
+  BlockStorage *block_storage;
 } Table;
 
 typedef struct {
-  Table* table;
+  Table *table;
   uint32_t page_num;
   uint16_t slot_num;
   bool end_of_table;
@@ -57,5 +59,11 @@ typedef struct {
   char username[COLUMN_USERNAME_SIZE];
   char email[COLUMN_EMAIL_SIZE];
 } Row;
+
+typedef struct {
+  char *buffer;
+  size_t buffer_length;
+  ssize_t input_length;
+} InputBuffer;
 
 #endif

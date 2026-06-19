@@ -1,26 +1,28 @@
+#include "input_reader.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "storage.h"
+#include <string.h>
 
-int main(int argc, char* argv[]) {
-    (void)argc;
-    (void)argv;
-    printf("Mini Relational Database\n");
-    
-    BlockStorage* block_storage = block_storage_open("test.db");
-    if (!block_storage) {
-        fprintf(stderr, "Failed to initialize storage\n");
-        return 1;
+int main(int argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+  InputBuffer *input_buffer = new_input_buffer();
+
+  while (true) {
+    printf("db > ");
+    read_input(input_buffer, stdin);
+    // Meta-commands start with a dot
+    if (input_buffer->buffer[0] == '.') {
+      if (strcmp(input_buffer->buffer, ".exit") == 0) {
+        printf("Exiting database...\n");
+        exit(EXIT_SUCCESS);
+      } else {
+        printf("Unrecognized command '%s'.\n", input_buffer->buffer);
+      }
+      continue;
     }
-    
-    Page* page = block_storage_get_page(block_storage, 0);
-    if (page) {
-        PageHeader* header = (PageHeader*)page->data;
-        printf("Got page 0. Type: %d, Item Count: %d\n", header->type, header->item_count);
-        page_free(page);
-    }
-    
-    block_storage_close(block_storage);
-    
-    return 0;
+
+    // SQL compilation will go here!
+    printf("Unrecognized keyword at start of '%s'.\n", input_buffer->buffer);
+  }
 }
