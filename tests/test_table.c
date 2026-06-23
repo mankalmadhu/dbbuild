@@ -54,7 +54,7 @@ void test_table_insert_row() {
   for (uint32_t i = 0; i < 20; i++) {
       r.id = i;
       FixedLengthRowStrategy.serialize(&r, buffer);
-      StorageResult res = table_insert_row(table, buffer, row_size);
+      StorageResult res = table_insert_row(table, r.id, buffer, row_size);
       assert(res == STORAGE_SUCCESS);
   }
 

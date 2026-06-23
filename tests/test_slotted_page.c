@@ -66,7 +66,7 @@ void test_page_insert_row() {
   FixedLengthRowStrategy.serialize(&r1, buffer);
   
   // 2. Insert row 1
-  StorageResult res = slotted_page_insert_row(&sp, buffer, row_size);
+  StorageResult res = slotted_page_insert_row(&sp, r1.id, buffer, row_size);
   assert(res == STORAGE_SUCCESS);
   
   assert(slotted_page_get_row_count(&sp) == 1);
@@ -74,7 +74,7 @@ void test_page_insert_row() {
   // 3. Insert row 2
   Row r2 = { .id = 2 };
   FixedLengthRowStrategy.serialize(&r2, buffer);
-  res = slotted_page_insert_row(&sp, buffer, row_size);
+  res = slotted_page_insert_row(&sp, r2.id, buffer, row_size);
   assert(res == STORAGE_SUCCESS);
   
   assert(slotted_page_get_row_count(&sp) == 2);

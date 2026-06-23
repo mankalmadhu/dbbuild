@@ -24,7 +24,7 @@ void test_cursor_full_scan() {
         sprintf(r.username, "user%d", i);
         sprintf(r.email, "user%d@example.com", i);
         FixedLengthRowStrategy.serialize(&r, buffer);
-        StorageResult res = table_insert_row(table, buffer, row_size);
+        StorageResult res = table_insert_row(table, r.id, buffer, row_size);
         assert(res == STORAGE_SUCCESS);
     }
 

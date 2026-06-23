@@ -38,6 +38,13 @@ typedef struct {
   uint16_t free_ptr;
 } PageHeader;
 
+//__attribute__((packed)) dreictive for compiler to avoid padding to contrl
+//slotted file offset structure
+typedef struct __attribute__((packed)) {
+  uint32_t key;
+  uint16_t offset;
+} Slot;
+
 typedef struct {
   Page *raw_page;
   PageHeader *header;
@@ -72,10 +79,7 @@ typedef enum {
   PREPARE_SYNTAX_ERROR
 } PrepareResult;
 
-typedef enum { 
-  STATEMENT_INSERT, 
-  STATEMENT_SELECT 
-} StatementType;
+typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
 
 typedef struct {
   StatementType type;
