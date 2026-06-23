@@ -12,14 +12,14 @@ uint16_t slotted_page_get_row_count(const SlottedPage *sp) {
 }
 
 bool slotted_page_has_space(const SlottedPage *sp, uint32_t row_size) {
-  uint32_t required_space = row_size + sizeof(uint16_t);
+  uint32_t required_space = row_size + sizeof(Slot);
   return sp->header->free_space >= required_space;
 }
 
-static uint16_t *get_slot_array(SlottedPage *sp) {
+static Slot *get_slot_array(SlottedPage *sp) {
   uint8_t *data_ptr = (uint8_t *)sp->raw_page->data;
   data_ptr += sizeof(PageHeader);
-  return (uint16_t *)data_ptr;
+  return (Slot *)data_ptr;
 }
 
 void *slotted_page_get_row(SlottedPage *sp, uint16_t slot_num) {
@@ -27,8 +27,8 @@ void *slotted_page_get_row(SlottedPage *sp, uint16_t slot_num) {
     return NULL;
   }
 
-  uint16_t *slot_array = get_slot_array(sp);
-  uint16_t row_offset = slot_array[slot_num];
+  Slot *slot_array = get_slot_array(sp);
+  uint16_t row_offset = slot_array[slot_num].offset;
 
   if (row_offset == 0) {
     return NULL;
@@ -45,15 +45,27 @@ StorageResult slotted_page_insert_row(SlottedPage *sp, uint32_t key,
     return STORAGE_ERROR;
   }
 
-  uint32_t required_space = row_size + sizeof(uint16_t);
+  uint32_t required_space = row_size + sizeof(Slot);
   sp->header->free_ptr -= row_size;
+
+  Slot *slot_array = get_slot_array(sp);
+  int insert_idx = 0;
+  while (insert_idx < sp->header->item_count &&
+         slot_array[insert_idx].key < key) {
+    insert_idx++;
+  }
+
+  if (insert_idx < sp->header->item_count) {
+    memmove(&slot_array[insert_idx + 1], &slot_array[insert_idx],
+            (sp->header->item_count - insert_idx) * sizeof(Slot));
+  }
+
+  slot_array[insert_idx].key = key;
+  slot_array[insert_idx].offset = sp->header->free_ptr;
 
   uint8_t *data_ptr = (uint8_t *)sp->raw_page->data;
   data_ptr += sp->header->free_ptr;
   memcpy(data_ptr, row_data, row_size);
-
-  uint16_t *slot_array = get_slot_array(sp);
-  slot_array[sp->header->item_count] = sp->header->free_ptr;
 
   sp->header->free_space -= required_space;
   sp->header->item_count++;
