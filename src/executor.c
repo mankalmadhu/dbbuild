@@ -46,7 +46,13 @@ static ExecuteResult execute_select(Statement *statement, Table *table) {
 
   void *temp_buffer = malloc(row_size);
 
-  Cursor *cursor = table_start(table);
+  Cursor *cursor;
+  if (statement->has_filter) {
+      cursor = table_find(table, statement->filter_id);
+  } else {
+      cursor = table_start(table);
+  }
+
   while (!cursor->end_of_table) {
     cursor_get(cursor, temp_buffer, row_size);
 
@@ -56,10 +62,12 @@ static ExecuteResult execute_select(Statement *statement, Table *table) {
           realloc(result.result_buffer, capacity * sizeof(Row));
     }
 
-    Row *rows = (Row *)result.result_buffer;
-    FixedLengthRowStrategy.deserialize(temp_buffer, &rows[result.row_count]);
-
+    FixedLengthRowStrategy.deserialize(
+        temp_buffer, &((Row *)result.result_buffer)[result.row_count]);
     result.row_count++;
+    
+    if (statement->has_filter) break;
+
     cursor_advance(cursor);
   }
   cursor_free(cursor);

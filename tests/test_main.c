@@ -10,6 +10,7 @@ void test_page_insert_row(void);
 void test_table_open_close(void);
 void test_table_insert_row(void);
 void test_cursor_full_scan(void);
+void test_cursor_table_find(void);
 
 // Input Reader Tests
 void test_new_input_buffer(void);
@@ -18,7 +19,11 @@ void test_read_input(void);
 // Compiler & Executor Tests
 void test_prepare_insert(void);
 void test_prepare_select(void);
+void test_prepare_select_with_filter(void);
 void test_executor_insert_select(void);
+
+// Slotted Page Tests
+void test_slotted_page_find_slot(void);
 
 int main(void) {
   printf("--- Running DB Tests ---\n");
@@ -26,6 +31,7 @@ int main(void) {
   // Compiler & Executor Tests
   test_prepare_insert();
   test_prepare_select();
+  test_prepare_select_with_filter();
   test_executor_insert_select();
   
   // Input Reader Tests
@@ -43,6 +49,7 @@ int main(void) {
   test_page_get_slot_array();
   test_page_get_row_data();
   test_page_insert_row();
+  test_slotted_page_find_slot();
 
   // Table Tests
   test_table_open_close();
@@ -50,6 +57,7 @@ int main(void) {
   
   // Cursor Tests
   test_cursor_full_scan();
+  test_cursor_table_find();
   
   printf("--- All tests passed! ---\n");
   return 0;

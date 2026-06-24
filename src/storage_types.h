@@ -84,6 +84,8 @@ typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
 typedef struct {
   StatementType type;
   Row row_to_insert; // Only used by insert statements
+  bool has_filter;
+  uint32_t filter_id;
 } Statement;
 
 #endif

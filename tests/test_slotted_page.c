@@ -93,3 +93,65 @@ void test_page_insert_row() {
   free(page.data);
   printf("test_page_insert_row passed!\n");
 }
+
+void test_slotted_page_find_slot() {
+  printf("Running test_slotted_page_find_slot...\n");
+  
+  Page page;
+  page.data = malloc(PAGE_SIZE);
+  page.page_num = 0;
+
+  SlottedPage sp;
+  slotted_page_init(&sp, &page);
+  
+  // Set up header manually or use an init function if one exists
+  sp.header->page_id = 0;
+  sp.header->next_page = 0;
+  sp.header->type = PAGE_TYPE_TABLE_LEAF;
+  sp.header->item_count = 0;
+  sp.header->free_space = PAGE_SIZE - sizeof(PageHeader);
+  sp.header->free_ptr = PAGE_SIZE;
+
+  Row r1 = { .id = 5 };
+  Row r2 = { .id = 1 };
+  Row r3 = { .id = 10 };
+  
+  char buffer[500];
+  uint32_t row_size = FixedLengthRowStrategy.get_row_size(&r1);
+  
+  // Insert keys out of order: 5, 1, 10
+  FixedLengthRowStrategy.serialize(&r1, buffer);
+  slotted_page_insert_row(&sp, r1.id, buffer, row_size);
+  
+  FixedLengthRowStrategy.serialize(&r2, buffer);
+  slotted_page_insert_row(&sp, r2.id, buffer, row_size);
+  
+  FixedLengthRowStrategy.serialize(&r3, buffer);
+  slotted_page_insert_row(&sp, r3.id, buffer, row_size);
+  
+  // Array should now be internally sorted: 1, 5, 10
+  assert(slotted_page_get_row_count(&sp) == 3);
+  
+  // Verify exact matches
+  assert(slotted_page_has_key(&sp, 1) == true);
+  assert(slotted_page_has_key(&sp, 5) == true);
+  assert(slotted_page_has_key(&sp, 10) == true);
+  
+  // Verify missing keys
+  assert(slotted_page_has_key(&sp, 0) == false);
+  assert(slotted_page_has_key(&sp, 7) == false);
+  
+  // Verify correct index returned by binary search
+  assert(slotted_page_find_insert_index(&sp, 1) == 0);
+  assert(slotted_page_find_insert_index(&sp, 5) == 1);
+  assert(slotted_page_find_insert_index(&sp, 10) == 2);
+  
+  // Verify insertion indexes for missing keys
+  assert(slotted_page_find_insert_index(&sp, 0) == 0); // belongs before 1
+  assert(slotted_page_find_insert_index(&sp, 3) == 1); // belongs between 1 and 5
+  assert(slotted_page_find_insert_index(&sp, 7) == 2); // belongs between 5 and 10
+  assert(slotted_page_find_insert_index(&sp, 15) == 3); // belongs after 10
+  
+  free(page.data);
+  printf("test_slotted_page_find_slot passed!\n");
+}

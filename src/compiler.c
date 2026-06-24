@@ -19,8 +19,16 @@ PrepareResult prepare_statement(InputBuffer* input_buffer, Statement* statement)
     return PREPARE_SUCCESS;
   }
   
-  if (strcmp(input_buffer->buffer, "select") == 0) {
+  if (strncmp(input_buffer->buffer, "select", 6) == 0) {
     statement->type = STATEMENT_SELECT;
+    statement->has_filter = false;
+    
+    int id;
+    if (sscanf(input_buffer->buffer, "select %d", &id) == 1) {
+        statement->has_filter = true;
+        statement->filter_id = (uint32_t)id;
+    }
+    
     return PREPARE_SUCCESS;
   }
 
