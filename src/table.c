@@ -105,3 +105,18 @@ StorageResult table_insert_row(Table *table, uint32_t key, void *row_data,
   page_free(target_page);
   return res;
 }
+
+uint16_t table_find_slot_index(Table *table, uint32_t page_num, uint32_t key) {
+  // 1. Read the raw page from disk
+  Page *page = block_storage_get_page(table->block_storage, page_num);
+  if (!page) {
+    return STORAGE_ERROR;
+  }
+
+  // 2. Wrap it in a SlottedPage
+  SlottedPage sp;
+  slotted_page_init(&sp, page);
+
+  // 3. Delegate the binary search to the SlottedPage!
+  return slotted_page_find_insert_index(&sp, key);
+}

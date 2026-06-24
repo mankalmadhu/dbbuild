@@ -23,4 +23,6 @@ uint16_t table_get_row_count_for_page(Table *table, uint32_t page_num);
 StorageResult table_insert_row(Table *table, uint32_t key, void *row_data,
                                uint32_t row_size);
 
+uint16_t table_find_slot_index(Table *table, uint32_t page_num, uint32_t key);
+
 #endif // TABLE_H
