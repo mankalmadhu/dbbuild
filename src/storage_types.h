@@ -16,7 +16,11 @@ typedef enum {
   PAGE_TYPE_TABLE_INTERIOR = 2
 } PageType;
 
-typedef enum { STORAGE_SUCCESS = 0, STORAGE_ERROR = 1 } StorageResult;
+typedef enum {
+  STORAGE_SUCCESS,
+  STORAGE_ERROR,
+  STORAGE_DUPLICATE_KEY
+} StorageResult;
 
 typedef struct {
   int file_descriptor;

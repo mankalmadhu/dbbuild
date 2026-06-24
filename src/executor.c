@@ -24,6 +24,8 @@ static ExecuteResult execute_insert(Statement *statement, Table *table) {
   if (res == STORAGE_SUCCESS) {
     result.status = EXECUTE_SUCCESS;
     result.rows_affected = 1;
+  } else if (res == STORAGE_DUPLICATE_KEY) {
+    result.status = EXECUTE_DUPLICATE_KEY;
   } else {
     result.status = EXECUTE_TABLE_FULL;
   }

@@ -85,7 +85,7 @@ StorageResult slotted_page_insert_row(SlottedPage *sp, uint32_t key,
   int insert_idx = find_slot_index(sp, key, &exact_match);
 
   if (exact_match)
-    return STORAGE_ERROR; // optional: no duplicate keys
+    return STORAGE_DUPLICATE_KEY; // optional: no duplicate keys
 
   if (insert_idx < sp->header->item_count) {
     memmove(&slot_array[insert_idx + 1], &slot_array[insert_idx],

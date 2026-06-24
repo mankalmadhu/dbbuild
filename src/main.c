@@ -58,6 +58,8 @@ int main(int argc, char *argv[]) {
       }
     } else if (res.status == EXECUTE_TABLE_FULL) {
       printf("Error: Table full.\n");
+    } else if (res.status == EXECUTE_DUPLICATE_KEY) {
+      printf("Error: Duplicate key.\n");
     } else {
       printf("Error: Execution failed.\n");
     }
