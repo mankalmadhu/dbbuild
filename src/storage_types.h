@@ -43,7 +43,7 @@ typedef struct {
 } PageHeader;
 
 //__attribute__((packed)) dreictive for compiler to avoid padding to contrl
-//slotted file offset structure
+// slotted file offset structure
 typedef struct __attribute__((packed)) {
   uint32_t key;
   uint16_t offset;
@@ -91,5 +91,10 @@ typedef struct {
   bool has_filter;
   uint32_t filter_id;
 } Statement;
+
+typedef struct __attribute__((packed)) {
+  uint32_t max_key;
+  uint32_t child_page_num;
+} InteriorSlot;
 
 #endif

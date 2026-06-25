@@ -24,6 +24,7 @@ void test_executor_insert_select(void);
 
 // Slotted Page Tests
 void test_slotted_page_find_slot(void);
+void test_interior_node_binary_search(void);
 
 int main(void) {
   printf("--- Running DB Tests ---\n");
@@ -50,6 +51,7 @@ int main(void) {
   test_page_get_row_data();
   test_page_insert_row();
   test_slotted_page_find_slot();
+  test_interior_node_binary_search();
 
   // Table Tests
   test_table_open_close();

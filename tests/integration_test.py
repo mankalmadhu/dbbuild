@@ -56,6 +56,24 @@ def test_duplicate_key():
     assert "Error: Duplicate key." in output, "Second insert should fail with Duplicate key"
     print("  -> Passed!")
 
+def test_btree_split():
+    print("Running Scenario 4: B-Tree Page Split...")
+    
+    # Generate 15 insert commands
+    commands = []
+    for i in range(1, 16):
+        commands.append(f"insert {i} user{i} user{i}@example.com")
+        
+    # Ask it to search for the 15th row (which spilled to Page 1)
+    commands.append("select 15")
+    
+    output = run_db(commands)
+    
+    # This assertion will currently FAIL because `select` only looks at Page 0!
+    assert "(15, user15, user15@example.com)" in output, "Row 15 was lost in the void!"
+    print("  -> Passed!")
+
+
 if __name__ == "__main__":
     if not os.path.exists(DB_BIN):
         print("Error: ./db not found. Please run 'make' first.")
@@ -65,4 +83,5 @@ if __name__ == "__main__":
     test_full_scan()
     test_filtered_select()
     test_duplicate_key()
+    test_btree_split()
     print("--- All integration tests passed! ---")
